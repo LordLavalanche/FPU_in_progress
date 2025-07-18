@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module cmp(
     input clk,
     input rst,
@@ -354,6 +355,153 @@ module muldiv(
 
     // Wire for incremented exponent
     wire [7:0] exp_incremented = p1_exp + 8'd1;
+    wire [7:0] exp_decremented = p1_exp - 8'd1;
+    
+    // Leading one detection and normalization logic
+    reg [4:0] leading_zeros;
+    reg [22:0] normalized_mantissa;
+    reg [7:0] final_exponent;
+    
+    // Leading one detection (priority encoder)
+    always @(*) begin
+        // Default values
+        leading_zeros = 5'd0;
+        normalized_mantissa = 23'b0;
+        final_exponent = p1_exp;
+        
+        casez (mant_prod[47:23]) // Check upper 25 bits for leading 1
+            25'b1????????????????????????: begin // Leading 1 at bit 47
+                leading_zeros = 5'd0;
+                normalized_mantissa = mant_prod[46:24];
+                final_exponent = exp_incremented;
+            end
+            25'b01???????????????????????: begin // Leading 1 at bit 46
+                leading_zeros = 5'd0;
+                normalized_mantissa = mant_prod[45:23];
+                final_exponent = p1_exp;
+            end
+            25'b001??????????????????????: begin // Leading 1 at bit 45
+                leading_zeros = 5'd1;
+                normalized_mantissa = mant_prod[44:22];
+                final_exponent = exp_decremented;
+            end
+            25'b0001?????????????????????: begin // Leading 1 at bit 44
+                leading_zeros = 5'd2;
+                normalized_mantissa = mant_prod[43:21];
+                final_exponent = p1_exp - 8'd2;
+            end
+            25'b00001????????????????????: begin // Leading 1 at bit 43
+                leading_zeros = 5'd3;
+                normalized_mantissa = mant_prod[42:20];
+                final_exponent = p1_exp - 8'd3;
+            end
+            25'b000001???????????????????: begin // Leading 1 at bit 42
+                leading_zeros = 5'd4;
+                normalized_mantissa = mant_prod[41:19];
+                final_exponent = p1_exp - 8'd4;
+            end
+            25'b0000001??????????????????: begin // Leading 1 at bit 41
+                leading_zeros = 5'd5;
+                normalized_mantissa = mant_prod[40:18];
+                final_exponent = p1_exp - 8'd5;
+            end
+            25'b00000001?????????????????: begin // Leading 1 at bit 40
+                leading_zeros = 5'd6;
+                normalized_mantissa = mant_prod[39:17];
+                final_exponent = p1_exp - 8'd6;
+            end
+            25'b000000001????????????????: begin // Leading 1 at bit 39
+                leading_zeros = 5'd7;
+                normalized_mantissa = mant_prod[38:16];
+                final_exponent = p1_exp - 8'd7;
+            end
+            25'b0000000001???????????????: begin // Leading 1 at bit 38
+                leading_zeros = 5'd8;
+                normalized_mantissa = mant_prod[37:15];
+                final_exponent = p1_exp - 8'd8;
+            end
+            25'b00000000001??????????????: begin // Leading 1 at bit 37
+                leading_zeros = 5'd9;
+                normalized_mantissa = mant_prod[36:14];
+                final_exponent = p1_exp - 8'd9;
+            end
+            25'b000000000001?????????????: begin // Leading 1 at bit 36
+                leading_zeros = 5'd10;
+                normalized_mantissa = mant_prod[35:13];
+                final_exponent = p1_exp - 8'd10;
+            end
+            25'b0000000000001????????????: begin // Leading 1 at bit 35
+                leading_zeros = 5'd11;
+                normalized_mantissa = mant_prod[34:12];
+                final_exponent = p1_exp - 8'd11;
+            end
+            25'b00000000000001???????????: begin // Leading 1 at bit 34
+                leading_zeros = 5'd12;
+                normalized_mantissa = mant_prod[33:11];
+                final_exponent = p1_exp - 8'd12;
+            end
+            25'b000000000000001??????????: begin // Leading 1 at bit 33
+                leading_zeros = 5'd13;
+                normalized_mantissa = mant_prod[32:10];
+                final_exponent = p1_exp - 8'd13;
+            end
+            25'b0000000000000001?????????: begin // Leading 1 at bit 32
+                leading_zeros = 5'd14;
+                normalized_mantissa = mant_prod[31:9];
+                final_exponent = p1_exp - 8'd14;
+            end
+            25'b00000000000000001????????: begin // Leading 1 at bit 31
+                leading_zeros = 5'd15;
+                normalized_mantissa = mant_prod[30:8];
+                final_exponent = p1_exp - 8'd15;
+            end
+            25'b000000000000000001???????: begin // Leading 1 at bit 30
+                leading_zeros = 5'd16;
+                normalized_mantissa = mant_prod[29:7];
+                final_exponent = p1_exp - 8'd16;
+            end
+            25'b0000000000000000001??????: begin // Leading 1 at bit 29
+                leading_zeros = 5'd17;
+                normalized_mantissa = mant_prod[28:6];
+                final_exponent = p1_exp - 8'd17;
+            end
+            25'b00000000000000000001?????: begin // Leading 1 at bit 28
+                leading_zeros = 5'd18;
+                normalized_mantissa = mant_prod[27:5];
+                final_exponent = p1_exp - 8'd18;
+            end
+            25'b000000000000000000001????: begin // Leading 1 at bit 27
+                leading_zeros = 5'd19;
+                normalized_mantissa = mant_prod[26:4];
+                final_exponent = p1_exp - 8'd19;
+            end
+            25'b0000000000000000000001???: begin // Leading 1 at bit 26
+                leading_zeros = 5'd20;
+                normalized_mantissa = mant_prod[25:3];
+                final_exponent = p1_exp - 8'd20;
+            end
+            25'b00000000000000000000001??: begin // Leading 1 at bit 25
+                leading_zeros = 5'd21;
+                normalized_mantissa = mant_prod[24:2];
+                final_exponent = p1_exp - 8'd21;
+            end
+            25'b000000000000000000000001?: begin // Leading 1 at bit 24
+                leading_zeros = 5'd22;
+                normalized_mantissa = mant_prod[23:1];
+                final_exponent = p1_exp - 8'd22;
+            end
+            25'b0000000000000000000000001: begin // Leading 1 at bit 23
+                leading_zeros = 5'd23;
+                normalized_mantissa = mant_prod[22:0];
+                final_exponent = p1_exp - 8'd23;
+            end
+            default: begin // All zeros or underflow
+                leading_zeros = 5'd24;
+                normalized_mantissa = 23'b0;
+                final_exponent = 8'b0; // Zero result
+            end
+        endcase
+    end
     
     // --- PIPELINE STAGE 2: Normalize and Assemble Final Result ---
     // This final stage takes the product and combines it with the
@@ -362,15 +510,16 @@ module muldiv(
         if (rst) begin
             result <= 32'b0;
         end else begin
-            // Normalize the 48-bit mantissa product
-            if (mant_prod[47]) begin
-                // Product is 48 bits long, MSB is at bit 47.
-                // Shift mantissa right by 1, increment exponent.
-                result <= {p1_sign, exp_incremented, mant_prod[46:24]};
+            // Check for zero result or underflow
+            if (final_exponent == 8'b0 || final_exponent[7] == 1'b1) begin
+                // Zero result or exponent underflow
+                result <= {p1_sign, 31'b0};
+            end else if (final_exponent == 8'hFF) begin
+                // Exponent overflow - infinity
+                result <= {p1_sign, 8'hFF, 23'b0};
             end else begin
-                // Product is 47 bits long, MSB is at bit 46.
-                // No exponent adjustment needed.
-                result <= {p1_sign, p1_exp, mant_prod[45:23]};
+                // Normal result
+                result <= {p1_sign, final_exponent, normalized_mantissa};
             end
         end
     end
@@ -715,259 +864,5 @@ module fpu_top(
         endcase
     end
 
-endmodule
-`timescale 1ns / 1ps
-
-module fpu_tb;
-
-    // Testbench signals
-    reg clk;
-    reg rst;
-    reg [31:0] a;
-    reg [31:0] b;
-    reg [2:0] consig;
-    wire [31:0] out;
-    wire [2:0] cmp_out;
-    
-    // Test vectors storage
-    reg [31:0] test_a [0:15];
-    reg [31:0] test_b [0:15];
-    reg [2:0] test_ops [0:4];
-    
-    // Loop variables
-    integer i, j;
-    
-    // Clock generation
-    initial begin
-        clk = 0;
-        forever #5 clk = ~clk; // 100MHz clock (10ns period)
-    end
-    
-    // Instantiate the FPU
-    fpu_top dut (
-        .clk(clk),
-        .rst(rst),
-        .a(a),
-        .b(b),
-        .consig(consig),
-        .out(out),
-        .cmp_out(cmp_out)
-    );
-    
-    // Initialize test vectors
-    initial begin
-        // IEEE 754 test values
-        test_a[0]  = 32'h3F800000;  // 1.0
-        test_a[1]  = 32'h40000000;  // 2.0
-        test_a[2]  = 32'h40400000;  // 3.0
-        test_a[3]  = 32'h40800000;  // 4.0
-        test_a[4]  = 32'h40A00000;  // 5.0
-        test_a[5]  = 32'hBF800000;  // -1.0
-        test_a[6]  = 32'hC0000000;  // -2.0
-        test_a[7]  = 32'h41200000;  // 10.0
-        test_a[8]  = 32'h3F000000;  // 0.5
-        test_a[9]  = 32'h3F400000;  // 0.75
-        test_a[10] = 32'h00000000;  // 0.0
-        test_a[11] = 32'h80000000;  // -0.0
-        test_a[12] = 32'h42C80000;  // 100.0
-        test_a[13] = 32'h3DCCCCCD;  // 0.1
-        test_a[14] = 32'h7F7FFFFF;  // Max normal
-        test_a[15] = 32'h00800000;  // Min normal
-        
-        test_b[0]  = 32'h40000000;  // 2.0
-        test_b[1]  = 32'h3F800000;  // 1.0
-        test_b[2]  = 32'h40000000;  // 2.0
-        test_b[3]  = 32'h40000000;  // 2.0
-        test_b[4]  = 32'h40400000;  // 3.0
-        test_b[5]  = 32'h40000000;  // 2.0
-        test_b[6]  = 32'h3F800000;  // 1.0
-        test_b[7]  = 32'h40000000;  // 2.0
-        test_b[8]  = 32'h40000000;  // 2.0
-        test_b[9]  = 32'h3F800000;  // 1.0
-        test_b[10] = 32'h3F800000;  // 1.0
-        test_b[11] = 32'h00000000;  // 0.0
-        test_b[12] = 32'h41200000;  // 10.0
-        test_b[13] = 32'h3F800000;  // 1.0
-        test_b[14] = 32'h3F800000;  // 1.0
-        test_b[15] = 32'h40000000;  // 2.0
-        
-        // Operations: compare, add, sub, mul, div
-        test_ops[0] = 3'b000; // Compare
-        test_ops[1] = 3'b001; // Add
-        test_ops[2] = 3'b010; // Subtract
-        test_ops[3] = 3'b011; // Multiply
-        test_ops[4] = 3'b100; // Divide (if implemented)
-    end
-    
-    // Helper function to convert IEEE 754 to real (for display)
-    function real ieee754_to_real;
-        input [31:0] ieee;
-        reg sign;
-        reg [7:0] exponent;
-        reg [22:0] mantissa;
-        real result;
-        begin
-            sign = ieee[31];
-            exponent = ieee[30:23];
-            mantissa = ieee[22:0];
-            
-            if (exponent == 8'h00) begin
-                if (mantissa == 23'h0) begin
-                    result = 0.0; // Zero
-                end else begin
-                    result = 0.0; // Denormalized (simplified)
-                end
-            end else if (exponent == 8'hFF) begin
-                result = 999999.0; // Infinity/NaN (simplified)
-            end else begin
-                // Normal number
-                result = (1.0 + mantissa / (2.0 ** 23)) * (2.0 ** (exponent - 127));
-                if (sign) result = -result;
-            end
-            ieee754_to_real = result;
-        end
-    endfunction
-    
-    // Helper function to get operation name
-    function [63:0] get_op_name;
-        input [2:0] op;
-        begin
-            case (op)
-                3'b000: get_op_name = "COMPARE ";
-                3'b001: get_op_name = "ADD     ";
-                3'b010: get_op_name = "SUBTRACT";
-                3'b011: get_op_name = "MULTIPLY";
-                3'b100: get_op_name = "DIVIDE  ";
-                default: get_op_name = "UNKNOWN ";
-            endcase
-        end
-    endfunction
-    
-    // Main test sequence
-    initial begin
-        // Initialize
-        $display("=====================================");
-        $display("       FPU Testbench Started");
-        $display("=====================================");
-        
-        rst = 1;
-        a = 0;
-        b = 0;
-        consig = 0;
-        
-        // Wait for reset
-        #20;
-        rst = 0;
-        #10;
-        
-        // Test each operation with different inputs
-        for (j = 0; j < 5; j = j + 1) begin
-            $display("\n--- Testing %s ---", get_op_name(test_ops[j]));
-            consig = test_ops[j];
-            
-            for (i = 0; i < 8; i = i + 1) begin
-                a = test_a[i];
-                b = test_b[i];
-                
-                // Wait for computation (pipelined operations need multiple cycles)
-                #30;
-                
-                $display("Test %0d: A=%h (%.3f), B=%h (%.3f)", 
-                    i+1, a, ieee754_to_real(a), b, ieee754_to_real(b));
-                
-                if (consig == 3'b000) begin
-                    // Compare operation
-                    $display("  Result: cmp_out=%b", cmp_out);
-                    $display("  Signs: A_sign=%b, B_sign=%b, Equal_mag=%b", 
-                        cmp_out[2], cmp_out[1], cmp_out[0]);
-                end else begin
-                    // Arithmetic operations
-                    $display("  Result: %h (%.3f)", out, ieee754_to_real(out));
-                end
-                
-                $display("  --------------------------------");
-            end
-        end
-        
-        // Specific test cases
-        $display("\n=== Specific Test Cases ===");
-        
-        // Test 1: Simple addition (1.0 + 2.0 = 3.0)
-        $display("\nTest: 1.0 + 2.0 = ?");
-        consig = 3'b001; // Add
-        a = 32'h3F800000; // 1.0
-        b = 32'h40000000; // 2.0
-        #30;
-        $display("Expected: 3.0 (40400000), Got: %.3f (%h)", ieee754_to_real(out), out);
-        
-        // Test 2: Simple subtraction (3.0 - 1.0 = 2.0)
-        $display("\nTest: 3.0 - 1.0 = ?");
-        consig = 3'b010; // Subtract
-        a = 32'h40400000; // 3.0
-        b = 32'h3F800000; // 1.0
-        #30;
-        $display("Expected: 2.0 (40000000), Got: %.3f (%h)", ieee754_to_real(out), out);
-        
-        // Test 3: Simple multiplication (2.0 * 3.0 = 6.0)
-        $display("\nTest: 2.0 * 3.0 = ?");
-        consig = 3'b011; // Multiply
-        a = 32'h40000000; // 2.0
-        b = 32'h40400000; // 3.0
-        #30;
-        $display("Expected: 6.0 (40C00000), Got: %.3f (%h)", ieee754_to_real(out), out);
-        
-        // Test 4: Zero handling
-        $display("\nTest: 0.0 + 5.0 = ?");
-        consig = 3'b001; // Add
-        a = 32'h00000000; // 0.0
-        b = 32'h40A00000; // 5.0
-        #30;
-        $display("Expected: 5.0 (40A00000), Got: %.3f (%h)", ieee754_to_real(out), out);
-        
-        // Test 5: Negative numbers
-        $display("\nTest: -1.0 + 2.0 = ?");
-        consig = 3'b001; // Add
-        a = 32'hBF800000; // -1.0
-        b = 32'h40000000; // 2.0
-        #30;
-        $display("Expected: 1.0 (3F800000), Got: %.3f (%h)", ieee754_to_real(out), out);
-        
-        // Test 6: Compare equal numbers
-        $display("\nTest: Compare 2.0 vs 2.0");
-        consig = 3'b000; // Compare
-        a = 32'h40000000; // 2.0
-        b = 32'h40000000; // 2.0
-        #30;
-        $display("Expected: Equal (cmp_out[0]=1), Got: cmp_out=%b", cmp_out);
-        
-        // Test 7: Compare different signs
-        $display("\nTest: Compare 2.0 vs -2.0");
-        consig = 3'b000; // Compare
-        a = 32'h40000000; // 2.0
-        b = 32'hC0000000; // -2.0
-        #30;
-        $display("Got: cmp_out=%b (A_sign=%b, B_sign=%b)", 
-            cmp_out, cmp_out[2], cmp_out[1]);
-        
-        // End simulation
-        #50;
-        $display("\n=====================================");
-        $display("       FPU Testbench Completed");
-        $display("=====================================");
-        $finish;
-    end
-    
-    // Monitor signals for debugging
-    initial begin
-        $monitor("Time=%0t, consig=%b, a=%h, b=%h, out=%h, cmp_out=%b", 
-                 $time, consig, a, b, out, cmp_out);
-    end
-    
-    // Generate VCD file for waveform viewing
-    initial begin
-        $dumpfile("fpu_tb.vcd");
-        $dumpvars(0, fpu_tb);
-    end
-    
 endmodule
 
